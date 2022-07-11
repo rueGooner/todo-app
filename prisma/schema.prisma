@@ -10,4 +10,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {}
+model User {
+  id        Int      @id @default(autoincrement())
+  joined    DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email String
+  hash  String
+
+  firstName String?
+  lastName  String?
+
+  tasks Todo[]
+}
+
+model Todo {
+  id        Int      @id @default(autoincrement())
+  joined    DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author   User @relation(fields: [authorId], references: [id])
+  authorId Int
+
+  title       String
+  description String?
+}
