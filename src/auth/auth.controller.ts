@@ -1,24 +1,20 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
-  Req,
-  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+  ) {}
 
   @Post('signup')
   handleSignup(@Body() body: AuthDto) {
-    console.log(body);
+    console.log(body.email, body.password);
 
     return this.authService.signup();
   }
