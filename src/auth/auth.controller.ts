@@ -6,22 +6,25 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { AuthDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('/signup')
-  handleSignup() {
-    return 'The register method';
+  @Post('signup')
+  handleSignup(@Body() body: AuthDto) {
+    console.log(body);
+
+    return this.authService.signup();
   }
 
-  @Post('/signin')
+  @Post('signin')
   handleSignin() {
-    return 'The login method';
+    return this.authService.signin();
   }
 }

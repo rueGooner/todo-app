@@ -8,10 +8,10 @@ export class AuthService {
   constructor(private prisma: PrismaService) {}
 
   signin() {
-    return 'The register method';
+    return 'The login method';
   }
 
   signup() {
-    return 'The login method';
+    return 'The register method';
   }
 }
