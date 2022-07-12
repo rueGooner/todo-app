@@ -10,14 +10,29 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
-  signin() {
-    return 'The login method';
+  async signin(payload: AuthDto) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: {
+        email: payload.email,
+      },
+    });
+
+    const passwordMatch = await argon.verify(
+      user.hash,
+      payload.password,
+    );
+
+    if (!passwordMatch)
+      throw new ForbiddenException(
+        'Passwords do not match',
+      );
+
+    delete user.hash;
+    return user;
   }
 
   async signup(payload: AuthDto) {
-    const hash = await argon.hash(
-      payload.password,
-    );
+    const hash = await argon.hash(payload.password);
 
     try {
       const user = await this.prisma.user.create({
@@ -35,8 +50,7 @@ export class AuthService {
       return user;
     } catch (error) {
       if (
-        error instanceof
-          PrismaClientKnownRequestError &&
+        error instanceof PrismaClientKnownRequestError &&
         error.code === 'P2002'
       )
         throw new ForbiddenException(
