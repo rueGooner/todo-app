@@ -6,16 +6,22 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthDto } from './dto/auth.dto';
 import * as argon from 'argon2';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+
 @Injectable()
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
   async signin(payload: AuthDto) {
-    const user = await this.prisma.user.findUniqueOrThrow({
+    const user = await this.prisma.user.findUnique({
       where: {
         email: payload.email,
       },
     });
+
+    if (!user)
+      throw new ForbiddenException(
+        'No Users match the given credentials.',
+      );
 
     const passwordMatch = await argon.verify(
       user.hash,
@@ -32,9 +38,8 @@ export class AuthService {
   }
 
   async signup(payload: AuthDto) {
-    const hash = await argon.hash(payload.password);
-
     try {
+      const hash = await argon.hash(payload.password);
       const user = await this.prisma.user.create({
         data: {
           email: payload.email,
@@ -49,13 +54,12 @@ export class AuthService {
 
       return user;
     } catch (error) {
-      if (
-        error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      )
-        throw new ForbiddenException(
-          'User Credentials already taken.',
-        );
+      if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2002')
+          throw new ForbiddenException(
+            'User Credentials already taken.',
+          );
+      }
       throw error;
     }
   }
